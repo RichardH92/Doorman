@@ -14,8 +14,9 @@ func main() {
   Queries("username", "{username:[0-9A-Za-z]+}", "password_hash", "{password_hash:[0-9A-Za-z]+}").
   Methods("POST")
 
-  // TODO: Create routes for the rest of your API here
-  r.HandleFunc("/test", HandleTest)
+  r.HandleFunc("/verify", HandleVerify).
+  Queries("username", "{username:[0-9A-Za-z]+}").
+  Methods("POST")
 
   log.Fatal(http.ListenAndServe(":8000", r))
 }
