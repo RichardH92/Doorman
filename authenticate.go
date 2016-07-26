@@ -16,7 +16,12 @@ func HandleAuth(w http.ResponseWriter, req *http.Request) {
 
   auth := authenticateUser(username, password)
   if auth == true {
-    w.Write([]byte("{\"token\":\"" + createToken(username, password) + "\"}"))
+    token, success := createToken(username)
+    if success == false {
+      w.WriteHeader(500)
+    } else {
+      w.Write([]byte("{\"token\":\"" + token + "\"}"))
+    }
   } else {
     w.WriteHeader(401)
   }
@@ -28,17 +33,16 @@ func authenticateUser(username string, password string) bool {
   return true
 }
 
-func createToken(username string, password string) string {
-  payload :=  `{"hello": "world"}`
+func createToken(username string) (string, bool) {
+  payload := "{\"username\":\"" + username + "\"}"
+  key := GetKey()
 
-  key := []byte{97,48,97,50,97,98,100,56,45,54,49,54,50,45,52,49,99,51,45,56,51,100,54,45,49,99,102,53,53,57,98,52,54,97,102,99}
+  token, err := jose.Sign(payload, jose.HS256, key)
 
-  token, err := jose.Sign(payload,jose.HS256,key)
-
-  if(err==nil) {
-      //go use token
-      fmt.Printf("\nHS256 = %v\n",token)
+  if(err == nil) {
+      return token, true
   }
 
-  return token
+  fmt.Println("Error generating token.")
+  return token, false
 }
